@@ -89,13 +89,17 @@ class Client:
 
     def executeQuery(self, query: BaseQuery) -> any:
 
-        logger.info(f"Executing query: {query.queryName} for {query.queryDesc}")
+        logger.debug(f"Executing query: {query.queryName} for {query.queryDesc}")
 
-        response = self.session.post(url=query.url, json=query.params)
+        # with open('file.json') as f:
+        #     response = json.load(f)
+
+
+        response = self.session.post(url=query.url, json=query.params,)
 
         if response.status_code != 200:
             raise Exception(f"Failed to execute query: {query.queryName} for {query.queryDesc}")
-        
+
         return query.scrape(response.json())
 
         # response = {"data":{"self":{"id":"468792084","isOrganizer":False,"memberships":{"pageInfo":{"hasNextPage":False,"endCursor":"MTc0MTY4NzgxNDAwMA==","__typename":"PageInfo"},"edges":[{"node":{"id":"34441441","name":"Traveling Souls - Cost Share Basis","link":"https://www.meetup.com/travelingsoulsdotorg","city":"Delhi","urlname":"travelingsoulsdotorg","state":"","country":"in","timezone":"Asia/Kolkata","groupPhoto":{"id":"526225796","baseUrl":"https://secure-content.meetupstatic.com/images/classic-events/","__typename":"PhotoInfo"},"organizer":{"id":"33158222","__typename":"Member"},"stepUpInfo":{"organizerNominees":[],"closingDate":None,"__typename":"StepUpInfo"},"__typename":"Group","isPrimaryOrganizer":False,"status":"PAID"},"__typename":"MemberGroupEdge"},{"node":{"id":"37892639","name":"The Coding Bus","link":"https://www.meetup.com/the-coding-bus","city":"Delhi","urlname":"the-coding-bus","state":"","country":"in","timezone":"Asia/Kolkata","groupPhoto":{"id":"526110744","baseUrl":"https://secure-content.meetupstatic.com/images/classic-events/","__typename":"PhotoInfo"},"organizer":{"id":"464852107","__typename":"Member"},"stepUpInfo":{"organizerNominees":[],"closingDate":None,"__typename":"StepUpInfo"},"__typename":"Group","isPrimaryOrganizer":False,"status":"PAID"},"__typename":"MemberGroupEdge"},{"node":{"id":"17357882","name":"Central Delhi Toastmasters Club","link":"https://www.meetup.com/central-delhi-toastmasters-club-cdtm","city":"Delhi","urlname":"central-delhi-toastmasters-club-cdtm","state":"","country":"in","timezone":"Asia/Kolkata","groupPhoto":{"id":"524000009","baseUrl":"https://secure-content.meetupstatic.com/images/classic-events/","__typename":"PhotoInfo"},"organizer":{"id":"174859872","__typename":"Member"},"stepUpInfo":{"organizerNominees":[{"id":"176134082","__typename":"Member"}],"closingDate":None,"__typename":"StepUpInfo"},"__typename":"Group","isPrimaryOrganizer":False,"status":"PAID"},"__typename":"MemberGroupEdge"}],"__typename":"MemberGroupConnection"},"__typename":"Member"}}}

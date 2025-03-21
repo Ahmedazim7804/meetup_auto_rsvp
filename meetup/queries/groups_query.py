@@ -41,7 +41,7 @@ class GroupsQuery(BaseQuery):
         super().__init__(method=QueryMethod.GET, url=BASE_GQL_URL, extraCookies=extraCookies, extraHeaders=extraHeaders, params=params, queryName=self.queryName, queryDesc=self.queryDesc)
         
 
-    def scrape(self, content: dict[str, any]) -> any:
+    def scrape(self, content: dict[str, any]) -> list[Group]:
 
         # content = json.loads(content)
 
@@ -55,6 +55,8 @@ class GroupsQuery(BaseQuery):
     
         if edges.__len__ == 0:
             logger.error(f"User has not joined any groups")
+
+        groups : list[Group] = []
 
         for edge in edges:
             node = edge.get('node', None)
@@ -83,5 +85,9 @@ class GroupsQuery(BaseQuery):
                 groupPhoto=groupPhoto
             )
 
+            groups.append(group)
+
             logger.debug(f"Group scraped: {group.name}")
+
+        return groups
 
