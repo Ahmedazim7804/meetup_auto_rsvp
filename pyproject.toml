@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "meetup"
+version = "0.1.0"
+description = ""
+authors = ["Ajeem Ahmad <ahmedazim7804@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+requests = "^2.32.3"
+pydantic = "^2.10.6"
+browser-cookie3 = "^0.20.1"
+loguru = "^0.7.3"
+beautifulsoup4 = "^4.13.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
