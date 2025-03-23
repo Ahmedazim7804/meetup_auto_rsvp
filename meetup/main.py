@@ -1,3 +1,4 @@
+import click
 from models.query import BaseQuery
 from client.meetup_client import Client
 from enums import QueryMethod
@@ -9,18 +10,32 @@ from loguru import logger
 from models.event import Event
 from models.rsvp import Rsvp
 
-client = Client()
+def get_groups():
+    client = Client()
 
-groupsQuery = GroupsQuery(extraHeaders={}, extraCookies={}, params=GroupQueryParams())
+    groupsQuery = GroupsQuery(extraHeaders={}, extraCookies={}, params=GroupQueryParams())
 
-groups = client.executeQuery(query=groupsQuery)
+    groups = client.executeQuery(query=groupsQuery)
+    print(groups)
 
-for group in groups:
-    groupEventsQuery = GroupEventsQuery(extraHeaders={}, extraCookies={}, params=GroupEventsQueryParams(groupName=group.urlIdentifier))
-    logger.info(f"Getting events for group: {group.name}")
-    events: list[Event] = client.executeQuery(query=groupEventsQuery)
 
-    for event in events:
-        print(event.title)
-        rsvpQuery = RsvpEventQuery(extraCookies={}, extraHeaders={}, params=RsvpEventQueryParams(eventId=event.id, venueId=event.venue.id, emailOptIn=False))
-        rsvp: Rsvp = client.executeQuery(rsvpQuery)
+get_groups()
+
+
+
+
+# client = Client()
+
+# groupsQuery = GroupsQuery(extraHeaders={}, extraCookies={}, params=GroupQueryParams())
+
+# groups = client.executeQuery(query=groupsQuery)
+
+# for group in groups:
+#     groupEventsQuery = GroupEventsQuery(extraHeaders={}, extraCookies={}, params=GroupEventsQueryParams(groupName=group.urlIdentifier))
+#     logger.info(f"Getting events for group: {group.name}")
+#     events: list[Event] = client.executeQuery(query=groupEventsQuery)
+
+#     for event in events:
+#         print(event.title)
+#         rsvpQuery = RsvpEventQuery(extraCookies={}, extraHeaders={}, params=RsvpEventQueryParams(eventId=event.id, venueId=event.venue.id, emailOptIn=False))
+#         rsvp: Rsvp = client.executeQuery(rsvpQuery)

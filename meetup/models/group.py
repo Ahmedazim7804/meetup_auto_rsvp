@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict 
+from typing import Any, Dict 
 
 @dataclass()
 class Group:
@@ -15,11 +15,11 @@ class Group:
     organizerId: str
 
     @staticmethod
-    def from_json(json: Dict[str, any]) -> 'Group':
+    def from_json(json: Dict[str, Any]) -> 'Group':
         groupPhoto : str | None = None
 
         try:
-            groupPhoto = json.get('groupPhoto').get('baseUrl') + json.get('groupPhoto').get('id')
+            groupPhoto = json.get('groupPhoto').__getattribute__('baseUrl') + json.get('groupPhoto').__getattribute__('id')
         except:
             pass
 

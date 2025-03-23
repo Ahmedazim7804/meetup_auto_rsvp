@@ -2,8 +2,7 @@ from dataclasses import dataclass
 from typing import TypedDict
 
 
-class BaseCookies(TypedDict):
-    TypedDict(
+BaseCookies = TypedDict(
         "BaseCookies", {
             'MEETUP_BROWSER_ID': str,
             'MEETUP_TRACK': str,
@@ -20,10 +19,11 @@ class BaseCookies(TypedDict):
             'enable_fundraising_pledge_banner_show': str,
             'MEETUP_MEMBER_LOCATION': str,
             '__stripe_sid': str,
-        }
+            "memberId": int,
+            "isSpooner": str,
+            "smdsd": str
+        },
+        total=False
     )
-    memberId: int
-    isSpooner: str
-    smdsd: str
 
 

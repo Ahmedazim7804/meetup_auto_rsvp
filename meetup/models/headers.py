@@ -1,10 +1,15 @@
 from dataclasses import dataclass
 from enums import QueryMethod
-from typing import TypedDict
+from typing import Any, TypedDict
 
-class BaseHeaders(TypedDict):
-    TypedDict(
+BaseHeaders = TypedDict(
         "BaseHeaders", {
+            "Accept": str,
+            "Referer": str,
+            "baggage": str,
+            "Origin": str,
+            "Connection": str,
+            "Priority": str,
             "User-Agent": str, "Accept-Language": str,
             'content-type': str,
             'apollographql-client-name': str,
@@ -13,12 +18,6 @@ class BaseHeaders(TypedDict):
             'Sec-Fetch-Dest': str,
             'Sec-Fetch-Mode': str,
             'Sec-Fetch-Site': str,
-                },
+            },
+        total=False
     )
-    Accept: str
-    Referer: str
-    baggage: str
-    Origin: str
-    Connection: str
-    Priority: str
-

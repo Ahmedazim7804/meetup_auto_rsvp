@@ -1,3 +1,4 @@
+from email import header
 from models.query import BaseQuery
 import browser_cookie3
 from loguru import logger
@@ -5,7 +6,7 @@ from models.cookies import BaseCookies
 from models.headers import BaseHeaders
 from client.browsers import FirefoxBrowser, ChromeBrowser, SafariBrowser, EdgeBrowser, BraveBrowser
 from models.browser import Browser
-from typing import NamedTuple
+from typing import _TypedDict, Any, NamedTuple, TypedDict, cast
 import requests
 import json
 
@@ -18,11 +19,14 @@ class Client:
         self.session = requests.session()
 
         cookiesRes : BaseCookiesResult = self.getBaseCookies()
-        cookies = cookiesRes.cookies
-        headers = self.getHeaders(cookiesRes.browser)
+        cookies: BaseCookies = cookiesRes.cookies
+        headers: BaseHeaders = self.getHeaders(cookiesRes.browser)
 
-        self.session.cookies.update(cookies)
-        self.session.headers.update(headers)
+        for cookie in cookies:
+            self.session.cookies[cookie] = cookies[cookie]
+
+        for header in headers:
+            self.session.cookies[header] = headers[header]
 
     
     def getBaseCookies(self) -> BaseCookiesResult:
@@ -59,9 +63,9 @@ class Client:
         for cookie in cookiejar:
             cookies[cookie.name] = cookie.value
 
-        return BaseCookiesResult(cookies, browser)
+        return BaseCookiesResult(cookies, selected_browser)
 
-    def getHeaders(self, browser: Browser) -> dict:
+    def getHeaders(self, browser: Browser) -> BaseHeaders:
 
         if browser == None:
             raise Exception("Browser is required for proper user-agent")
@@ -87,7 +91,7 @@ class Client:
         return headers
 
 
-    def executeQuery(self, query: BaseQuery) -> any:
+    def executeQuery(self, query: BaseQuery) -> Any:
 
         logger.debug(f"Executing query: {query.queryName} for {query.queryDesc}")
 
