@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from enums import QueryMethod
 from abc import ABC, abstractmethod
+from typing import Any
 
 
 @dataclass
@@ -14,6 +15,6 @@ class BaseQuery(ABC):
     params: dict | None = None
 
     @abstractmethod
-    def scrape(self, content: str) -> any:
+    def scrape(self, content: Any) -> Any:
         pass
     

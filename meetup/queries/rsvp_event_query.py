@@ -1,6 +1,6 @@
 
 from models.query import BaseQuery
-from typing import TypedDict
+from typing import Any, TypedDict
 from constants import BASE_GQL_URL
 from urllib.parse import urljoin
 from models.headers import BaseHeaders
@@ -45,7 +45,7 @@ class RsvpEventQuery(BaseQuery):
             }
         }
 
-    def __init__(self, extraHeaders: BaseHeaders, extraCookies: dict, params: RsvpEventQueryParams):
+    def __init__(self, extraHeaders: dict, extraCookies: dict, params: RsvpEventQueryParams):
 
         extraHeaders = {**self.staticExtraHeaders, **extraHeaders}
         extraCookies = {**self.staticExtraCookies, **extraCookies}
@@ -54,12 +54,12 @@ class RsvpEventQuery(BaseQuery):
         self.staticParams['variables']['input']['venueId'] = params.venueId
         self.staticParams['variables']['input']['proEmailShareOptin'] = 'true' if params.emailOptIn else 'false'
 
-        params = {**self.staticParams}
+        finalParams = {**self.staticParams, **params.__dict__}
 
-        super().__init__(method=QueryMethod.GET, url=BASE_GQL_URL, extraCookies=extraCookies, extraHeaders=extraHeaders, params=params, queryName=self.queryName, queryDesc=self.queryDesc)
+        super().__init__(method=QueryMethod.GET, url=BASE_GQL_URL, extraCookies=extraCookies, extraHeaders=extraHeaders, params=finalParams, queryName=self.queryName, queryDesc=self.queryDesc)
         
 
-    def scrape(self, content: dict[str, any]) -> Rsvp:
+    def scrape(self, content: dict[str, Any]) -> Rsvp:
 
         logger.info(f"Parsing RSVP response from {self.queryName}")
 

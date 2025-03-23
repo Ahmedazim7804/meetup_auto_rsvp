@@ -12,6 +12,7 @@ pydantic = "^2.10.6"
 browser-cookie3 = "^0.20.1"
 loguru = "^0.7.3"
 beautifulsoup4 = "^4.13.3"
+click = "^8.1.8"
 
 
 [build-system]

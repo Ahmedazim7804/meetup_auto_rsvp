@@ -32,16 +32,16 @@ class GroupsQuery(BaseQuery):
         },
     }
 
-    def __init__(self, extraHeaders: BaseHeaders, extraCookies: dict, params: GroupQueryParams):
+    def __init__(self, extraHeaders: dict, extraCookies: dict, params: GroupQueryParams):
 
         extraHeaders = {**self.staticExtraHeaders, **extraHeaders}
         extraCookies = {**self.staticExtraCookies, **extraCookies}
-        params = {**self.staticParams, **params}
+        finalParams = {**self.staticParams, **params.__dict__}
 
-        super().__init__(method=QueryMethod.GET, url=BASE_GQL_URL, extraCookies=extraCookies, extraHeaders=extraHeaders, params=params, queryName=self.queryName, queryDesc=self.queryDesc)
+        super().__init__(method=QueryMethod.GET, url=BASE_GQL_URL, extraCookies=extraCookies, extraHeaders=extraHeaders, params=finalParams, queryName=self.queryName, queryDesc=self.queryDesc)
         
 
-    def scrape(self, content: dict[str, any]) -> list[Group]:
+    def scrape(self, content: dict) -> list[Group]:
 
         # content = json.loads(content)
 

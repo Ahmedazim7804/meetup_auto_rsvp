@@ -1,5 +1,5 @@
 from models.query import BaseQuery
-from typing import TypedDict
+from typing import Any, TypedDict
 from constants import BASE_GQL_URL
 from urllib.parse import urljoin
 from models.headers import BaseHeaders
@@ -37,7 +37,7 @@ class GroupEventsQuery(BaseQuery):
         }
     }
 
-    def __init__(self, extraHeaders: BaseHeaders, extraCookies: dict, params: GroupEventsQueryParams):
+    def __init__(self, extraHeaders: dict, extraCookies: dict, params: GroupEventsQueryParams):
 
         extraHeaders = {**self.staticExtraHeaders, **extraHeaders}
         extraCookies = {**self.staticExtraCookies, **extraCookies}
@@ -46,19 +46,19 @@ class GroupEventsQuery(BaseQuery):
         self.staticParams['variables']['after'] = params.after
         self.staticParams['variables']['afterDateTime'] = dt.datetime.now(dt.timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
 
-        params = {**self.staticParams}
+        finalParams = {**self.staticParams, **params.__dict__}
 
-        super().__init__(method=QueryMethod.GET, url=BASE_GQL_URL, extraCookies=extraCookies, extraHeaders=extraHeaders, params=params, queryName=self.queryName, queryDesc=self.queryDesc)
+        super().__init__(method=QueryMethod.GET, url=BASE_GQL_URL, extraCookies=extraCookies, extraHeaders=extraHeaders, params=finalParams, queryName=self.queryName, queryDesc=self.queryDesc)
         
 
-    def scrape(self, content: dict[str, any]) -> list[Event]:
+    def scrape(self, content: dict[str, Any]) -> list[Event]:
 
         logger.info(f"Scraping groups from content received by {self.queryName}")
 
         eventsData = content['data']['groupByUrlname']['events']
         totalEvents = eventsData['totalCount']
 
-        rawEvents : list[dict[str, any]] = eventsData['edges']
+        rawEvents : list[dict[str, Any]] = eventsData['edges']
 
         events: list[Event] = []
 

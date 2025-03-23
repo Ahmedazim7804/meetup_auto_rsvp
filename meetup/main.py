@@ -11,7 +11,7 @@ from models.rsvp import Rsvp
 
 client = Client()
 
-groupsQuery = GroupsQuery(extraHeaders={}, extraCookies={}, params={})
+groupsQuery = GroupsQuery(extraHeaders={}, extraCookies={}, params=GroupQueryParams())
 
 groups = client.executeQuery(query=groupsQuery)
 
