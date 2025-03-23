@@ -53,7 +53,7 @@ class GroupEventsQuery(BaseQuery):
 
     def scrape(self, content: dict[str, Any]) -> list[Event]:
 
-        logger.info(f"Scraping groups from content received by {self.queryName}")
+        logger.info(f"Scraping events from content received by {self.queryName}")
 
         eventsData = content['data']['groupByUrlname']['events']
         totalEvents = eventsData['totalCount']

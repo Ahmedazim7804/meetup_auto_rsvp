@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict 
+from typing import Any, Dict 
 
 @dataclass()
 class EventVenue:
@@ -15,10 +15,10 @@ class Event:
     id: str
     title: str
     eventUrl: str
-    description: str
+    description: str | None
     creatorId: str
     eventHosts: list[str]
-    feeSettings: any
+    feeSettings: Any
     venue: EventVenue
     createdTime: str
     startTime: str
@@ -32,7 +32,7 @@ class Event:
 
 
     @staticmethod
-    def from_json(json: Dict[str, any]) -> 'Event':
+    def from_json(json: Dict[str, Any]) -> 'Event':
         eventPhoto = json.get('featuredEventPhoto', {}).get('source', None)
 
         rawEventHosts = json.get('eventHosts', [])

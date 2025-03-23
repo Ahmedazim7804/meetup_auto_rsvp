@@ -1,14 +1,11 @@
-from email import header
 from models.query import BaseQuery
-import browser_cookie3
 from loguru import logger
 from models.cookies import BaseCookies
 from models.headers import BaseHeaders
 from client.browsers import FirefoxBrowser, ChromeBrowser, SafariBrowser, EdgeBrowser, BraveBrowser
 from models.browser import Browser
-from typing import _TypedDict, Any, NamedTuple, TypedDict, cast
+from typing import Any, NamedTuple
 import requests
-import json
 
 class BaseCookiesResult(NamedTuple):
     cookies: BaseCookies
@@ -36,11 +33,6 @@ class Client:
             SafariBrowser(),
             EdgeBrowser(),
             BraveBrowser(),
-            # browser_cookie3.firefox,
-            # browser_cookie3.chrome,
-            # browser_cookie3.safari,
-            # browser_cookie3.edge,
-            # browser_cookie3.brave,
         ]
 
         cookiejar = None
@@ -91,22 +83,20 @@ class Client:
         return headers
 
 
-    def executeQuery(self, query: BaseQuery) -> Any:
+    def executeQuery(self, query: BaseQuery) -> Any | None:
 
-        logger.debug(f"Executing query: {query.queryName} for {query.queryDesc}")
+        try:
+            logger.debug(f"Executing query: {query.queryName} for {query.queryDesc}")
 
-        # with open('file.json') as f:
-        #     response = json.load(f)
+            response = self.session.post(url=query.url, json=query.params,)
 
+            if response.status_code != 200:
+                raise Exception(f"Failed to execute query: {query.queryName} for {query.queryDesc}")
 
-        response = self.session.post(url=query.url, json=query.params,)
+            return query.scrape(response.json())
 
-        if response.status_code != 200:
-            raise Exception(f"Failed to execute query: {query.queryName} for {query.queryDesc}")
-
-        return query.scrape(response.json())
-
-        # response = {"data":{"self":{"id":"468792084","isOrganizer":False,"memberships":{"pageInfo":{"hasNextPage":False,"endCursor":"MTc0MTY4NzgxNDAwMA==","__typename":"PageInfo"},"edges":[{"node":{"id":"34441441","name":"Traveling Souls - Cost Share Basis","link":"https://www.meetup.com/travelingsoulsdotorg","city":"Delhi","urlname":"travelingsoulsdotorg","state":"","country":"in","timezone":"Asia/Kolkata","groupPhoto":{"id":"526225796","baseUrl":"https://secure-content.meetupstatic.com/images/classic-events/","__typename":"PhotoInfo"},"organizer":{"id":"33158222","__typename":"Member"},"stepUpInfo":{"organizerNominees":[],"closingDate":None,"__typename":"StepUpInfo"},"__typename":"Group","isPrimaryOrganizer":False,"status":"PAID"},"__typename":"MemberGroupEdge"},{"node":{"id":"37892639","name":"The Coding Bus","link":"https://www.meetup.com/the-coding-bus","city":"Delhi","urlname":"the-coding-bus","state":"","country":"in","timezone":"Asia/Kolkata","groupPhoto":{"id":"526110744","baseUrl":"https://secure-content.meetupstatic.com/images/classic-events/","__typename":"PhotoInfo"},"organizer":{"id":"464852107","__typename":"Member"},"stepUpInfo":{"organizerNominees":[],"closingDate":None,"__typename":"StepUpInfo"},"__typename":"Group","isPrimaryOrganizer":False,"status":"PAID"},"__typename":"MemberGroupEdge"},{"node":{"id":"17357882","name":"Central Delhi Toastmasters Club","link":"https://www.meetup.com/central-delhi-toastmasters-club-cdtm","city":"Delhi","urlname":"central-delhi-toastmasters-club-cdtm","state":"","country":"in","timezone":"Asia/Kolkata","groupPhoto":{"id":"524000009","baseUrl":"https://secure-content.meetupstatic.com/images/classic-events/","__typename":"PhotoInfo"},"organizer":{"id":"174859872","__typename":"Member"},"stepUpInfo":{"organizerNominees":[{"id":"176134082","__typename":"Member"}],"closingDate":None,"__typename":"StepUpInfo"},"__typename":"Group","isPrimaryOrganizer":False,"status":"PAID"},"__typename":"MemberGroupEdge"}],"__typename":"MemberGroupConnection"},"__typename":"Member"}}}
-        # query.scrape(response)
+        except Exception as e:
+            logger.error(f"Failed to execute query: {query.queryName} for {query.queryDesc}: {e}")
+            return None
        
         

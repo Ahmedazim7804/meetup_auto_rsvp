@@ -1,32 +1,37 @@
+from http import client
 import click
 from models.group import Group
 from client.meetup_client import Client
 from queries.groups_query import GroupsQuery, GroupQueryParams
 from queries.group_events_query import GroupEventsQuery, GroupEventsQueryParams
 from queries.rsvp_event_query import RsvpEventQuery, RsvpEventQueryParams
+from queries.get_event_with_id import EventQuery, EventQueryParams
 from loguru import logger
 from models.event import Event
 from models.rsvp import Rsvp
 from prettytable import PrettyTable
 
-def get_groups() -> list[Group]:
+def get_groups() -> list[Group] | None:
     client = Client()
     groupsQuery = GroupsQuery(extraHeaders={}, extraCookies={}, params=GroupQueryParams())
-    groups: list[Group] = client.executeQuery(query=groupsQuery)
+    groups: list[Group] | None = client.executeQuery(query=groupsQuery)
+
+    if groups == None:
+        logger.error("No groups found")
 
     return groups
 
-def get_group_events(group: Group) -> list[Event]:
+def get_group_events(group: Group) -> list[Event] | None:
     client = Client()
     groupEventQuery = GroupEventsQuery(extraHeaders={}, extraCookies={}, params=GroupEventsQueryParams(groupName=group.urlIdentifier))
-    events: list[Event] = client.executeQuery(query=groupEventQuery)
+    events: list[Event] | None = client.executeQuery(query=groupEventQuery)
 
     return events
 
-def rsvp_event(event: Event) -> Rsvp:
+def rsvp_event(event_id: str, venue_id: str, email_opt_in: bool = False) -> Rsvp | None:
     client = Client()
-    rsvpQuery = RsvpEventQuery(extraCookies={}, extraHeaders={}, params=RsvpEventQueryParams(eventId=event.id, venueId=event.venue.id, emailOptIn=False))
-    rsvp: Rsvp = client.executeQuery(rsvpQuery)
+    rsvpQuery = RsvpEventQuery(extraCookies={}, extraHeaders={}, params=RsvpEventQueryParams(eventId=event_id, venueId=venue_id, emailOptIn=False))
+    rsvp: Rsvp | None = client.executeQuery(rsvpQuery)
 
     return rsvp
 
@@ -35,7 +40,11 @@ def rsvp_event(event: Event) -> Rsvp:
 @click.help_option("--help", "-h")
 def get_groups_command():
     """Get groups joined by the user"""
-    groups: list[Group] = get_groups()
+    groups: list[Group] | None = get_groups()
+
+    if groups == None:
+        click.echo("No groups found", err=True)
+        return
 
     table = PrettyTable(["Serial No.", "id", "Name"])
 
@@ -61,8 +70,12 @@ def get_groups_events_command(group_id: str, all: bool, silent: bool = False):
         click.echo("Only one of group-id or all should be provided", err=True)
     
 
-    table = PrettyTable(["Serial No.", "id", "Title", "Time", "Venue", "RSVP Open"])
-    groups: list[Group] = get_groups()
+    table = PrettyTable(["Serial No.", "id", "Title", "Time", "Venue", "Venue ID", "RSVP Open"])
+    groups: list[Group] | None = get_groups()
+
+    if groups == None:
+        click.echo("No groups found", err=True)
+        return
 
     if group_id != None:
         click.echo(f"Getting events for group: {group_id}")
@@ -72,10 +85,14 @@ def get_groups_events_command(group_id: str, all: bool, silent: bool = False):
             click.echo(f"You are not part of any group with given id {group_id}", err=True)
             return
         
-        events = get_group_events(group_with_given_id)
+        events : list[Event] | None = get_group_events(group_with_given_id)
+
+        if events == None:
+            click.echo(f"No events found for group {group_with_given_id.urlIdentifier}", err=True)
+            return
 
         for sno, event in enumerate(events, 1):
-            table.add_row([sno, event.id, event.title, event.startTime, event.venue.name, event.rsvpOpen])
+            table.add_row([sno, event.id, event.title, event.startTime, event.venue.name, event.venue.id, event.rsvpOpen])
 
         click.echo(table)
         return events
@@ -86,7 +103,7 @@ def get_groups_events_command(group_id: str, all: bool, silent: bool = False):
             events = get_group_events(group)
 
             for sno, event in enumerate(events, 1):
-                table.add_row([sno, event.id, event.title, event.startTime, event.venue.name, event.rsvpOpen])
+                table.add_row([sno, event.id, event.title, event.startTime, event.venue.name, event.venue.id, event.rsvpOpen])
 
         click.echo(table)
         return events
@@ -99,7 +116,48 @@ def get_groups_events_command(group_id: str, all: bool, silent: bool = False):
 @click.option("--all", "-i", help="RSVP for all events", required=False, is_flag=True)
 def rsvp_event_command(event_id: str, venue_id: str, email_opt_in: bool):
     """RSVP for an event"""
-    pass
+
+    allInfoProvided = (event_id != None and venue_id != None and email_opt_in != None)
+    anyInfoProvided = (event_id != None or venue_id != None or email_opt_in != None)
+
+    if (anyInfoProvided == False and all == False):
+        click.echo("Either provide event info or rsvp to all events", err=True)
+        return
+    
+    if (anyInfoProvided == True and all == True):
+        click.echo("Either rsvp to all events or specific event", err=True)
+        return
+    
+    if (anyInfoProvided == True and allInfoProvided == False):
+        click.echo("Provide all event info", err=True)
+        return
+    
+    
+    if (allInfoProvided == True):
+        rsvp : Rsvp | None = rsvp_event(event_id, venue_id, email_opt_in)
+
+        if rsvp == None:
+            click.echo("RSVP failed", err=True)
+            return
+
+        click.echo(f"RSVP status: {rsvp.status}")
+        return rsvp
+    else:
+        groups: list[Group] | None = get_groups()
+
+        if groups == None:
+            click.echo("RSVP failed", err=True)
+            return
+
+        for group in groups:
+            events = get_group_events(group)
+
+            if events == None:
+                click.echo("RSVP failed", err=True)
+                return
+
+            for event in events:
+                rsvp = rsvp_event(event.id, event.venue.id, email_opt_in)
 
 
 
@@ -112,23 +170,7 @@ main.add_command(get_groups_events_command)
 
 if __name__ == "__main__":
     main()
+    # client = Client()
 
-
-
-
-
-# client = Client()
-
-# groupsQuery = GroupsQuery(extraHeaders={}, extraCookies={}, params=GroupQueryParams())
-
-# groups = client.executeQuery(query=groupsQuery)
-
-# for group in groups:
-#     groupEventsQuery = GroupEventsQuery(extraHeaders={}, extraCookies={}, params=GroupEventsQueryParams(groupName=group.urlIdentifier))
-#     logger.info(f"Getting events for group: {group.name}")
-#     events: list[Event] = client.executeQuery(query=groupEventsQuery)
-
-#     for event in events:
-#         print(event.title)
-#         rsvpQuery = RsvpEventQuery(extraCookies={}, extraHeaders={}, params=RsvpEventQueryParams(eventId=event.id, venueId=event.venue.id, emailOptIn=False))
-#         rsvp: Rsvp = client.executeQuery(rsvpQuery)
+    # eventQuery = EventQuery(extraHeaders={}, extraCookies={}, params=EventQueryParams(event_id="306736069"))
+    # client.executeQuery(query=eventQuery)
