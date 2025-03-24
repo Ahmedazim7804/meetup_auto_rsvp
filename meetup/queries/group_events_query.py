@@ -63,9 +63,12 @@ class GroupEventsQuery(BaseQuery):
         events: list[Event] = []
 
         for rawEvent in rawEvents:
-            node = rawEvent['node']
-            event = Event.from_json(node)
-            events.append(event)
+            try:
+                node = rawEvent['node']
+                event = Event.from_json(node)
+                events.append(event)
+            except Exception as e:
+                logger.error(f"Error parsing event: {e}")
 
 
         logger.info(f"Scraped {len(events)} events from {totalEvents} events")

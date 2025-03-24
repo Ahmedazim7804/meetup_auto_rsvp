@@ -12,7 +12,7 @@ class Group:
     state: str | None
     timezone: str | None
     groupPhoto: str | None
-    organizerId: str
+    organizerId: str | None
 
     @staticmethod
     def from_json(json: Dict[str, Any]) -> 'Group':
@@ -33,6 +33,6 @@ class Group:
             country=json['country'],
             timezone=json.get('timezone', None),
             groupPhoto=groupPhoto,
-            organizerId=json['organizer']['id']
+            organizerId=json.get('organizer', {}).get('id', None)
         )
 

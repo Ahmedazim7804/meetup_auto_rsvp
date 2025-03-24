@@ -28,7 +28,7 @@ class Client:
     
     def getBaseCookies(self) -> BaseCookiesResult:
         browsers : list[Browser] = [
-            FirefoxBrowser(),
+            # FirefoxBrowser(),
             ChromeBrowser(),
             SafariBrowser(),
             EdgeBrowser(),
@@ -96,7 +96,7 @@ class Client:
             return query.scrape(response.json())
 
         except Exception as e:
-            logger.error(f"Failed to execute query: {query.queryName} for {query.queryDesc}: {e}")
+            logger.error(f"Failed to execute query {query.queryName}: {e}")
             return None
        
         

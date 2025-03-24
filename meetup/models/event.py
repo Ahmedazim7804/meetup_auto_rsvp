@@ -48,10 +48,10 @@ class Event:
     title: str
     eventUrl: str
     description: str | None
-    creatorId: str
+    creatorId: str | None
     eventHosts: list[str]
     feeSettings: Any
-    venue: EventVenue
+    venue: EventVenue | None
     createdTime: str
     startTime: str
     endTime: str
@@ -64,29 +64,40 @@ class Event:
 
     @staticmethod
     def from_json(json: Dict[str, Any]) -> 'Event':
-        eventPhoto = json.get('featuredEventPhoto', {}).get('source', None)
 
-        rawEventHosts = json.get('eventHosts', [])
+        eventPhoto = None
+        if (json.get('featuredEventPhoto', {})) is not None:
+            eventPhoto = json.get('featuredEventPhoto', {}).get('source', None)
+
         eventHosts = []
-        for host in rawEventHosts:
-            eventHosts.append(host.get('memberId'))
+        if (rawEventHosts := json.get('eventHosts', [])) is not None:
+            for host in rawEventHosts:
+                eventHosts.append(host.get('memberId'))
+        
+        creatorId = None
+        if (creator := json.get('creatorId', {})) is not None:
+            creatorId = creator.get('id', None)
+        
+        venue = None
+        if (rawVenue := json.get('venue', {})) is not None:
+            venue = EventVenue(
+                id=rawVenue['id'],
+                name=rawVenue['name'],
+                address=rawVenue['address'],
+                city=rawVenue['city'],
+                state=rawVenue.get('state', None)
+            )
         
         return Event(
             id=json['id'],
             title=json['title'],
             eventUrl=json['eventUrl'],
             description=json['description'],
-            creatorId=json.get('creatorId', {}).get('id'),
+            creatorId=creatorId,
             eventHosts=json['eventHosts'],
             feeSettings=json['feeSettings'],
-
-            venue=EventVenue(
-                id=json['venue']['id'],
-                name=json['venue']['name'],
-                address=json['venue']['address'],
-                city=json['venue']['city'],
-                state=json['venue'].get('state', None)
-            ),
+            
+            venue=venue,
 
             createdTime=json['createdTime'],
             startTime=json['dateTime'],

@@ -15,7 +15,7 @@ import datetime as dt
 @dataclass
 class RsvpEventQueryParams():
     eventId: str
-    venueId: str
+    venueId: str | None
     emailOptIn : bool = False
 
 

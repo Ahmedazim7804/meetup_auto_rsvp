@@ -1,3 +1,4 @@
+from inspect import getattr_static
 from multiprocessing import Value
 import click
 from config import MeetupConfig
@@ -31,7 +32,7 @@ def get_group_events(group: Group) -> list[Event] | None:
 
     return events
 
-def rsvp_event(event_id: str, venue_id: str, email_opt_in: bool = False) -> Rsvp | None:
+def rsvp_event(event_id: str, venue_id: str | None, email_opt_in: bool = False) -> Rsvp | None:
     client = Client()
     rsvpQuery = RsvpEventQuery(extraCookies={}, extraHeaders={}, params=RsvpEventQueryParams(eventId=event_id, venueId=venue_id, emailOptIn=False))
     rsvp: Rsvp | None = client.executeQuery(rsvpQuery)
@@ -60,18 +61,19 @@ def config_groups():
             user_input = click.prompt("Enter groups serial numbers separated by comma")
 
             raw_selected_groups = user_input.strip().replace(" ", "").replace("\t", "").split(",")
-            selected_groups = [groups[int(group_id)] for group_id in raw_selected_groups]
+            selected_groups = [groups[int(group_id) - 1] for group_id in raw_selected_groups]
 
             if len(selected_groups) == 0:
                 click.echo("Select atleast one group", err=True)
                 continue
 
-            click.echo(f"Selected groups: {selected_groups}")
+            click.echo(f"Selected groups: {[group.name for group in selected_groups]}")
 
             selected_groups_ids = [str(group.id) for group in selected_groups]
 
             config.groups = selected_groups_ids
             config.save()
+            click.prompt("Config saved, press enter to continue")
             break
 
         except ValueError:
@@ -79,6 +81,7 @@ def config_groups():
             continue
         except Exception as e:
             click.echo(f"Error: {e}", err=True)
+            click.prompt("Press enter to continue")
             break;
 
 
@@ -108,7 +111,7 @@ def config_rsvp_conditions():
                 click.echo("Invalid choice", err=True)
 
         elif choice == "2":
-            value = click.prompt("Min. attendees required(number): ").strip().replace(" ", "").replace("\t", "")
+            value = click.prompt("Minimum attendees required to Auto RSVP (number)").strip().replace(" ", "").replace("\t", "")
 
             try:
                 value = int(value)
@@ -136,19 +139,25 @@ def config_rsvp_conditions():
 def config_command():
     """Update/Create meetup config"""
 
-    click.echo("1. Select groups to Auto RSVP to events from")
-    click.echo("2. Update condition for an event to Auto RSVP to")
+    while True:
+        click.echo("1. Select groups to Auto RSVP to events from")
+        click.echo("2. Update condition for an event to Auto RSVP to")
+        click.echo("3. Exit")
 
-    choice = click.prompt("Enter choice").strip().replace(" ", "").replace("\t", "")
-    click.clear()
+        choice = click.prompt("Enter choice").strip().replace(" ", "").replace("\t", "")
+        click.clear()
 
-    if choice == "1":
-        config_groups()
-    elif choice == "2":
-        config_rsvp_conditions()
-    else:
-        click.echo("Invalid choice", err=True)
-        return
+        if choice == "1":
+            config_groups()
+        elif choice == "2":
+            config_rsvp_conditions()
+        elif choice == "3" or choice == "exit" or choice == "q":
+            break
+        else:
+            click.echo("Invalid choice", err=True)
+            return
+        
+        click.clear()
 
 
 @click.command(name="groups")
@@ -207,7 +216,9 @@ def get_groups_events_command(group_id: str, all: bool, silent: bool = False):
             return
 
         for sno, event in enumerate(events, 1):
-            table.add_row([sno, event.id, event.title, event.startTime, event.venue.name, event.venue.id, event.rsvpOpen, event.youGoing])
+            venueName = event.venue.name if event.venue != None else "Online"
+            venueId = event.venue.id if event.venue != None else "Online"
+            table.add_row([sno, event.id, event.title, event.startTime, venueName, venueId, event.rsvpOpen, event.youGoing])
 
         click.echo(table)
         return events
@@ -225,39 +236,15 @@ def get_groups_events_command(group_id: str, all: bool, silent: bool = False):
 
 
 @click.command(name="rsvp")
-# @click.option("--event-id", "-e", help="Event id to RSVP", required=False)
-# @click.option("--venue-id", "-v", help="Venue id to RSVP", required=False)
 @click.option("--email-opt-in", "-o", help="Email opt in", required=False, default=True)
 @click.option("--all", "-a", help="RSVP for all events", required=False, is_flag=True)
 def rsvp_event_command(email_opt_in: bool, all: bool):
     """RSVP for an event"""
 
-    # allInfoProvided = (event_id != None and venue_id != None )
-    # anyInfoProvided = (event_id != None or venue_id != None)
+    if (config.groups == None or len(config.groups) == 0):
+        click.echo("RSVP failed, no groups selected in config", err=True)
+        return
 
-    # if (anyInfoProvided == False and all == False):
-    #     click.echo("Either provide event info or rsvp to all events", err=True)
-    #     return
-    
-    # if (anyInfoProvided == True and all == True):
-    #     click.echo("Either rsvp to all events or specific event", err=True)
-    #     return
-    
-    # if (anyInfoProvided == True and allInfoProvided == False):
-    #     click.echo("Provide all event info", err=True)
-    #     return
-    
-    
-    # if (allInfoProvided == True):
-    #     rsvp : Rsvp | None = rsvp_event(event_id, venue_id, email_opt_in)
-
-    #     if rsvp == None:
-    #         click.echo("RSVP failed", err=True)
-    #         return
-
-    #     click.echo(f"RSVP status: {rsvp.status}")
-    #     return rsvp
-    # else:
     groups: list[Group] | None = get_groups()
 
     if groups == None:
@@ -292,13 +279,16 @@ def rsvp_event_command(email_opt_in: bool, all: bool):
                 continue
 
             try:
-                rsvp = rsvp_event(event.id, event.venue.id, email_opt_in)
+                rsvp = rsvp_event(event.id, getattr(event.venue, 'id', 'Online'), email_opt_in)
 
                 if rsvp == None:
                     logger.error(f"Failed RSVPing to event {event.title}")
+                    continue;
 
-                logger.info(f"Succesfully RSVPed to event {event.title} showing at {event.startTime} at {event.venue.name}")
+                logger.info(f"Succesfully RSVPed to event {event.title} showing at {event.startTime} at {getattr(event.venue, 'name', 'Online')}")
             except Exception as e:
+                import pdb
+                pdb.set_trace()
                 logger.error(f"Error RSVPing to event {event.title}: {e}")
 
 

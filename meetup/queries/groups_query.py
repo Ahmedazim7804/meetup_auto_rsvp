@@ -43,8 +43,6 @@ class GroupsQuery(BaseQuery):
 
     def scrape(self, content: dict) -> list[Group]:
 
-        # content = json.loads(content)
-
         logger.info(f"Scraping groups from content received by {self.queryName}")
 
         edges = content.get('data', {}).get('self', {}).get('memberships', {}).get('edges', None)
@@ -79,7 +77,7 @@ class GroupsQuery(BaseQuery):
                 link=node['link'],
                 name=node['name'],
                 urlIdentifier=node['urlname'],
-                organizerId=organizer['id'],
+                organizerId=organizer.get('id', None) if organizer is not None else None,
                 state=node.get('state', None),
                 timezone=node.get('timezone', None),
                 groupPhoto=groupPhoto
