@@ -186,7 +186,6 @@ def get_groups_command():
 def get_groups_events_command(group_id: str, all: bool, silent: bool = False):
     """Get events for a group"""
 
-    click.echo(f"Group id: {group_id}")
 
     if group_id == None and all == False:
         click.echo("Either group-id or all should be provided", err=True)
@@ -217,9 +216,7 @@ def get_groups_events_command(group_id: str, all: bool, silent: bool = False):
             return
 
         for sno, event in enumerate(events, 1):
-            venueName = event.venue.name if event.venue != None else "Online"
-            venueId = event.venue.id if event.venue != None else "Online"
-            table.add_row([sno, event.id, event.title, event.startTime, venueName, venueId, event.rsvpOpen, event.youGoing])
+            table.add_row([sno, event.id, event.title, event.startTime, getattr(event.venue, "name", "Online"), getattr(event.venue, 'id', "None"), event.rsvpOpen, event.youGoing])
 
         click.echo(table)
         return events
@@ -230,7 +227,7 @@ def get_groups_events_command(group_id: str, all: bool, silent: bool = False):
             events = get_group_events(group)
 
             for sno, event in enumerate(events, 1):
-                table.add_row([sno, event.id, event.title, event.startTime, event.venue.name, event.venue.id, event.rsvpOpen, event.youGoing])
+                table.add_row([sno, event.id, event.title, event.startTime, getattr(event.venue, "name", "Online"), getattr(event.venue, 'id', "None"), event.rsvpOpen, event.youGoing])
 
         click.echo(table)
         return events
@@ -252,12 +249,19 @@ def rsvp_event_command(email_opt_in: bool, all: bool):
         click.echo("RSVP failed, no groups found", err=True)
         return
 
+    total_groups = len(groups)
+    total_eligible_groups = 0
+    total_events = 0
+    total_eligible_events = 0
+    total_rsvp = 0
+
     for group in groups:
 
         if (group.id not in config.groups):
             logger.debug(f"Skipping group {group.urlIdentifier} because it is not selected in config")
             continue
 
+        total_eligible_groups += 1
         events = get_group_events(group)
 
         if events == None:
@@ -266,6 +270,7 @@ def rsvp_event_command(email_opt_in: bool, all: bool):
             continue
 
         for event in events:
+            total_events += 1
 
             if (event.rsvpOpen == False):
                 logger.info(f"Skipping event {event.title} because RSVP is not open")
@@ -278,6 +283,8 @@ def rsvp_event_command(email_opt_in: bool, all: bool):
             if (config.conditions.satisfy_conditions(event) == False):
                 logger.info(f"Skipping event {event.title} because it does not satisfy configured conditions")
                 continue
+                
+            total_eligible_events += 1
 
             try:
                 rsvp = rsvp_event(event.id, getattr(event.venue, 'id', 'Online'), email_opt_in)
@@ -285,12 +292,19 @@ def rsvp_event_command(email_opt_in: bool, all: bool):
                 if rsvp == None:
                     logger.error(f"Failed RSVPing to event {event.title}")
                     continue;
-
+                
+                total_rsvp += 1
                 logger.info(f"Succesfully RSVPed to event {event.title} showing at {event.startTime} at {getattr(event.venue, 'name', 'Online')}")
             except Exception as e:
                 import pdb
                 pdb.set_trace()
                 logger.error(f"Error RSVPing to event {event.title}: {e}")
+    
+    click.echo(f"Total groups: {total_groups}")
+    click.echo(f"Total eligible groups: {total_eligible_groups}")
+    click.echo(f"Total events: {total_events}")
+    click.echo(f"Total eligible events: {total_eligible_events}")
+    click.echo(f"RSVPed events count: {total_rsvp}")
 
 
 
