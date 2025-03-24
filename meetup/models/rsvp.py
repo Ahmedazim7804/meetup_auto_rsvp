@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict 
+from typing import Any, Dict 
 
 @dataclass()
 class Rsvp:
@@ -9,7 +9,7 @@ class Rsvp:
     payStatus: str | None
 
     @staticmethod
-    def from_json(json: Dict[str, any]) -> 'Rsvp':
+    def from_json(json: Dict[str, Any]) -> 'Rsvp':
 
         return Rsvp(
             id=json['id'],

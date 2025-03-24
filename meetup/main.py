@@ -70,7 +70,7 @@ def get_groups_events_command(group_id: str, all: bool, silent: bool = False):
         click.echo("Only one of group-id or all should be provided", err=True)
     
 
-    table = PrettyTable(["Serial No.", "id", "Title", "Time", "Venue", "Venue ID", "RSVP Open"])
+    table = PrettyTable(["Serial No.", "id", "Title", "Time", "Venue", "Venue ID", "RSVP Open", "You are going"])
     groups: list[Group] | None = get_groups()
 
     if groups == None:
@@ -92,7 +92,7 @@ def get_groups_events_command(group_id: str, all: bool, silent: bool = False):
             return
 
         for sno, event in enumerate(events, 1):
-            table.add_row([sno, event.id, event.title, event.startTime, event.venue.name, event.venue.id, event.rsvpOpen])
+            table.add_row([sno, event.id, event.title, event.startTime, event.venue.name, event.venue.id, event.rsvpOpen, event.youGoing])
 
         click.echo(table)
         return events
@@ -103,22 +103,25 @@ def get_groups_events_command(group_id: str, all: bool, silent: bool = False):
             events = get_group_events(group)
 
             for sno, event in enumerate(events, 1):
-                table.add_row([sno, event.id, event.title, event.startTime, event.venue.name, event.venue.id, event.rsvpOpen])
+                table.add_row([sno, event.id, event.title, event.startTime, event.venue.name, event.venue.id, event.rsvpOpen, event.youGoing])
 
         click.echo(table)
         return events
 
 
 @click.command(name="rsvp")
-@click.option("--event-id", "-e", help="Event id to RSVP", required=True)
-@click.option("--venue-id", "-v", help="Venue id to RSVP", required=True)
+@click.option("--event-id", "-e", help="Event id to RSVP", required=False)
+@click.option("--venue-id", "-v", help="Venue id to RSVP", required=False)
 @click.option("--email-opt-in", "-o", help="Email opt in", required=False, default=False)
-@click.option("--all", "-i", help="RSVP for all events", required=False, is_flag=True)
-def rsvp_event_command(event_id: str, venue_id: str, email_opt_in: bool):
+@click.option("--all", "-a", help="RSVP for all events", required=False, is_flag=True)
+def rsvp_event_command(event_id: str, venue_id: str, email_opt_in: bool, all: bool):
     """RSVP for an event"""
 
-    allInfoProvided = (event_id != None and venue_id != None and email_opt_in != None)
-    anyInfoProvided = (event_id != None or venue_id != None or email_opt_in != None)
+    allInfoProvided = (event_id != None and venue_id != None )
+    anyInfoProvided = (event_id != None or venue_id != None)
+
+    import pdb
+    pdb.set_trace()
 
     if (anyInfoProvided == False and all == False):
         click.echo("Either provide event info or rsvp to all events", err=True)
@@ -158,6 +161,7 @@ def rsvp_event_command(event_id: str, venue_id: str, email_opt_in: bool):
 
             for event in events:
                 rsvp = rsvp_event(event.id, event.venue.id, email_opt_in)
+                logger.info(f"Succesfully RSVPed to event {event.title} showing at {event.startTime} at {event.venue.name}")
 
 
 
@@ -167,6 +171,7 @@ def main():
 
 main.add_command(get_groups_command)
 main.add_command(get_groups_events_command)
+main.add_command(rsvp_event_command)
 
 if __name__ == "__main__":
     main()
