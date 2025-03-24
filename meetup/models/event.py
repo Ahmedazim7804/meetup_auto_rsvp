@@ -2,6 +2,38 @@ from dataclasses import dataclass
 from typing import Any, Dict 
 
 @dataclass()
+class EventRsvpConditions:
+    isPaid: bool = False
+    isOnline: bool = True
+    minNumAttendees: int = 0
+
+    @staticmethod
+    def from_json(json: dict[str, Any]) -> 'EventRsvpConditions':
+        return EventRsvpConditions(
+            isPaid=json['isPaid'],
+            isOnline=json['isOnline'],
+            minNumAttendees=json['minNumAttendees']
+        )
+    
+    def satisfy_conditions(self, event: 'Event') -> bool:
+        # If the event is paid and the user does not want to go to paid event, return False
+        if (not self.isPaid) and event.feeSettings is not None:
+            return False
+
+        # If the event is online and the user does not want to go to online event, return False
+        if event.isOnline and not self.isOnline:
+            return False
+
+        # If the event does not have enough attendees, return False
+        if event.numAttendees < self.minNumAttendees:
+            return False
+
+        return True
+
+
+
+
+@dataclass()
 class EventVenue:
     id: str
     name: str
@@ -29,7 +61,6 @@ class Event:
     status: str
     eventPhoto: str | None
     rsvpOpen : bool
-
 
     @staticmethod
     def from_json(json: Dict[str, Any]) -> 'Event':

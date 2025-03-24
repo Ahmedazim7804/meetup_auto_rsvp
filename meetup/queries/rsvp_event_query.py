@@ -66,12 +66,12 @@ class RsvpEventQuery(BaseQuery):
         rsvpData = content.get('data', {}).get('rsvp', None)
 
         if rsvpData['errors'] is not None:
-            logger.error(f"Failed to RSVP because: {rsvpData['errors']['message']}")
-            # raise Exception(f"Error in RSVP: {rsvpData['errors']['message']}")
+            logger.error(f"Failed to RSVP because: {rsvpData['errors'][0]['message']}")
+            raise Exception(f"Error in RSVP: {rsvpData['errors'][0]['message']}")
 
         if rsvpData is None or rsvpData.get('rsvp', None) is None:
             logger.error(f"Failed to RSVP beacuse No RSVP data found in content received by {self.queryName}")
-            # raise Exception(f"No RSVP data found in content received by {self.queryName}")
+            raise Exception(f"No RSVP data found in content received by {self.queryName}")
     
 
         rsvp = Rsvp.from_json(rsvpData['rsvp'])
