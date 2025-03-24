@@ -28,7 +28,7 @@ class Client:
     
     def getBaseCookies(self) -> BaseCookiesResult:
         browsers : list[Browser] = [
-            # FirefoxBrowser(),
+            FirefoxBrowser(),
             ChromeBrowser(),
             SafariBrowser(),
             EdgeBrowser(),
