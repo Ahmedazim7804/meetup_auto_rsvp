@@ -59,7 +59,7 @@ class EventQuery(BaseQuery):
 
     def scrape(self, content: dict[str, Any]) -> Event:
 
-        logger.info(f"Scraping event data from content received by {self.queryName}")
+        logger.debug(f"Scraping event data from content received by {self.queryName}")
 
         rawEventData = content['data']['event']
         event = Event.from_json(rawEventData)

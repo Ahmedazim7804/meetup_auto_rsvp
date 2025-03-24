@@ -1,5 +1,6 @@
 from inspect import getattr_static
 from multiprocessing import Value
+import sys
 import click
 from config import MeetupConfig
 from models.group import Group
@@ -21,7 +22,7 @@ def get_groups() -> list[Group] | None:
     groups: list[Group] | None = client.executeQuery(query=groupsQuery)
 
     if groups == None:
-        logger.error("No groups found")
+        logger.warning("No groups found")
 
     return groups
 
@@ -254,13 +255,13 @@ def rsvp_event_command(email_opt_in: bool, all: bool):
     for group in groups:
 
         if (group.id not in config.groups):
-            logger.info(f"Skipping group {group.urlIdentifier} because it is not selected in config")
+            logger.debug(f"Skipping group {group.urlIdentifier} because it is not selected in config")
             continue
 
         events = get_group_events(group)
 
         if events == None:
-            logger.error(f"Failed to get events for group: {group.name}")
+            logger.warning(f"Failed to get events for group: {group.name}")
             click.echo(f"Failed to get events for group: {group.name}", err=True)
             continue
 
@@ -294,8 +295,20 @@ def rsvp_event_command(email_opt_in: bool, all: bool):
 
 
 @click.group()
-def main():
-    pass
+@click.option("--log-level", "-l", help="Select Log Level", required=False, default="warn")
+def main(log_level: str):
+
+    logger.remove()
+    if log_level == "debug":
+        logger.add(sys.stdout, level="DEBUG")
+    elif log_level == "info":
+        logger.add(sys.stdout, level="INFO")
+    elif log_level == "warn":
+        logger.add(sys.stdout, level="WARNING")
+    elif log_level == "error":
+        logger.add(sys.stdout, level="ERROR")
+    else:
+        logger.add(sys.stdout, level="WARNING")
 
 main.add_command(get_groups_command)
 main.add_command(get_groups_events_command)

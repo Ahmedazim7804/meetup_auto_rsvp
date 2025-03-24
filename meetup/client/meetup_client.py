@@ -96,7 +96,7 @@ class Client:
             return query.scrape(response.json())
 
         except Exception as e:
-            logger.error(f"Failed to execute query {query.queryName}: {e}")
+            logger.debug(f"Failed to execute query {query.queryName}: {e}")
             return None
        
         

@@ -43,7 +43,7 @@ class GroupsQuery(BaseQuery):
 
     def scrape(self, content: dict) -> list[Group]:
 
-        logger.info(f"Scraping groups from content received by {self.queryName}")
+        logger.debug(f"Scraping groups from content received by {self.queryName}")
 
         edges = content.get('data', {}).get('self', {}).get('memberships', {}).get('edges', None)
 
@@ -52,7 +52,7 @@ class GroupsQuery(BaseQuery):
             raise Exception("No groups found")
     
         if edges.__len__ == 0:
-            logger.error(f"User has not joined any groups")
+            logger.warning(f"User has not joined any groups")
 
         groups : list[Group] = []
 
@@ -62,9 +62,10 @@ class GroupsQuery(BaseQuery):
 
             if node is None:
                 logger.error(f"Group has no information")
+                continue;
                 
             if organizer is None:
-                logger.error(f"Group has no organizer")
+                logger.warning(f"Group {node['name']} has no organizer")
             
             groupPhoto = None
             if 'groupPhoto' in node:
@@ -85,7 +86,7 @@ class GroupsQuery(BaseQuery):
 
             groups.append(group)
 
-            logger.debug(f"Group scraped: {group.name}")
+            logger.info(f"Group scraped: {group.name}")
 
         return groups
 

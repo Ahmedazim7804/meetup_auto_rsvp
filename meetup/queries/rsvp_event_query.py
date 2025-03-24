@@ -47,6 +47,8 @@ class RsvpEventQuery(BaseQuery):
 
     def __init__(self, extraHeaders: dict, extraCookies: dict, params: RsvpEventQueryParams):
 
+        self.eventId = params.eventId
+
         extraHeaders = {**self.staticExtraHeaders, **extraHeaders}
         extraCookies = {**self.staticExtraCookies, **extraCookies}
 
@@ -56,21 +58,22 @@ class RsvpEventQuery(BaseQuery):
 
         finalParams = {**self.staticParams, **params.__dict__}
 
+
         super().__init__(method=QueryMethod.GET, url=BASE_GQL_URL, extraCookies=extraCookies, extraHeaders=extraHeaders, params=finalParams, queryName=self.queryName, queryDesc=self.queryDesc)
         
 
     def scrape(self, content: dict[str, Any]) -> Rsvp:
 
-        logger.info(f"Parsing RSVP response from {self.queryName}")
+        logger.debug(f"Parsing RSVP response from {self.queryName}")
 
         rsvpData = content.get('data', {}).get('rsvp', None)
 
         if rsvpData['errors'] is not None:
-            logger.error(f"Failed to RSVP because: {rsvpData['errors'][0]['message']}")
+            logger.error(f"Failed to RSVP event {self.eventId}: {rsvpData['errors'][0]['message']}")
             raise Exception(f"Error in RSVP: {rsvpData['errors'][0]['message']}")
 
         if rsvpData is None or rsvpData.get('rsvp', None) is None:
-            logger.error(f"Failed to RSVP beacuse No RSVP data found in content received by {self.queryName}")
+            logger.error(f"Failed to RSVP event {self.eventId}: No RSVP data found in content received by {self.queryName}")
             raise Exception(f"No RSVP data found in content received by {self.queryName}")
     
 

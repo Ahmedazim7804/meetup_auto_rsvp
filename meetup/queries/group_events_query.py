@@ -53,7 +53,7 @@ class GroupEventsQuery(BaseQuery):
 
     def scrape(self, content: dict[str, Any]) -> list[Event]:
 
-        logger.info(f"Scraping events from content received by {self.queryName}")
+        logger.debug(f"Scraping events from content received by {self.queryName}")
 
         eventsData = content['data']['groupByUrlname']['events']
         totalEvents = eventsData['totalCount']
@@ -71,5 +71,5 @@ class GroupEventsQuery(BaseQuery):
                 logger.error(f"Error parsing event: {e}")
 
 
-        logger.info(f"Scraped {len(events)} events from {totalEvents} events")
+        logger.info(f"Successfully Scraped {len(events)} events from {totalEvents} events")
         return events

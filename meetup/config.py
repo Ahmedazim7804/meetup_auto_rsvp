@@ -22,7 +22,7 @@ class MeetupConfig:
                 jsonConfig = json.load(f)
 
                 if len(jsonConfig.keys()) == 0:
-                    logger.info("Config file is empty")
+                    logger.warning("Config file is empty")
                     return
 
                 self.groups = jsonConfig.get('groups', [])
@@ -30,10 +30,10 @@ class MeetupConfig:
                 if 'conditions' in jsonConfig:
                     self.conditions = EventRsvpConditions.from_json(jsonConfig.get('conditions'))
                 else:
-                    logger.info("No conditions found in config file")
+                    logger.debug("No conditions found in config file")
 
         except FileNotFoundError:
-            logger.info("Config file not found")
+            logger.warning("Config file not found")
             return
         except json.JSONDecodeError:
             logger.error("Error parsing config file")
