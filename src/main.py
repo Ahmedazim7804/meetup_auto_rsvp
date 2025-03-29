@@ -72,7 +72,7 @@ def config_groups():
 
             config.groups = selected_groups_ids
             config.save()
-            click.prompt("Config saved, press enter to continue")
+            click.prompt("Config saved, press enter to continue", default="", show_default=False)
             break
 
         except ValueError:
