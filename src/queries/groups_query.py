@@ -1,12 +1,12 @@
-from models.query import BaseQuery
+from src.models.query import BaseQuery
 from typing import TypedDict
-from constants import BASE_GQL_URL
+from src.constants import BASE_GQL_URL
 from urllib.parse import urljoin
-from models.headers import BaseHeaders
+from src.models.headers import BaseHeaders
 from dataclasses import dataclass
-from enums import QueryMethod
+from src.enums import QueryMethod
 from loguru import logger
-from models.group import Group
+from src.models.group import Group
 import json
 
 @dataclass

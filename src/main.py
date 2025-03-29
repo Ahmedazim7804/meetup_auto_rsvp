@@ -1,17 +1,15 @@
-from inspect import getattr_static
-from multiprocessing import Value
 import sys
 import click
-from config import MeetupConfig
-from models.group import Group
-from client.meetup_client import Client
-from queries.groups_query import GroupsQuery, GroupQueryParams
-from queries.group_events_query import GroupEventsQuery, GroupEventsQueryParams
-from queries.rsvp_event_query import RsvpEventQuery, RsvpEventQueryParams
-from queries.get_event_with_id import EventQuery, EventQueryParams
+from src.config import MeetupConfig
+from src.models.group import Group
+from src.client.meetup_client import Client
+from src.queries.groups_query import GroupsQuery, GroupQueryParams
+from src.queries.group_events_query import GroupEventsQuery, GroupEventsQueryParams
+from src.queries.rsvp_event_query import RsvpEventQuery, RsvpEventQueryParams
+from src.queries.get_event_with_id import EventQuery, EventQueryParams
 from loguru import logger
-from models.event import Event, EventRsvpConditions
-from models.rsvp import Rsvp
+from src.models.event import Event, EventRsvpConditions
+from src.models.rsvp import Rsvp
 from prettytable import PrettyTable
 
 config = MeetupConfig()

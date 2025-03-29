@@ -4,6 +4,9 @@ version = "0.1.0"
 description = "An Application to auto/bulk rsvp to events of groups on meetup.com website"
 authors = ["Ajeem Ahmad <ahmedazim7804@gmail.com>"]
 readme = "README.md"
+packages = [
+    {include="src"}
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -13,6 +16,9 @@ browser-cookie3 = "^0.20.1"
 loguru = "^0.7.3"
 click = "^8.1.8"
 prettytable = "^3.15.1"
+
+[tool.poetry.scripts]
+meetup = "src.main:main"
 
 [build-system]
 requires = ["poetry-core"]

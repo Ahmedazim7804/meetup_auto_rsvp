@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import json
 from os import name
-from models.event import EventRsvpConditions
+from src.models.event import EventRsvpConditions
 from loguru import logger
 
 @dataclass

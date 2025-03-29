@@ -1,4 +1,4 @@
-from models.browser import Browser
+from src.models.browser import Browser
 import browser_cookie3
 
 class FirefoxBrowser(Browser):

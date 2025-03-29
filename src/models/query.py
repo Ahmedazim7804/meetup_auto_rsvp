@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from enums import QueryMethod
+from src.enums import QueryMethod
 from abc import ABC, abstractmethod
 from typing import Any
 

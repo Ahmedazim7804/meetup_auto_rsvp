@@ -1,9 +1,9 @@
-from models.query import BaseQuery
+from src.models.query import BaseQuery
 from loguru import logger
-from models.cookies import BaseCookies
-from models.headers import BaseHeaders
-from client.browsers import FirefoxBrowser, ChromeBrowser, SafariBrowser, EdgeBrowser, BraveBrowser
-from models.browser import Browser
+from src.models.cookies import BaseCookies
+from src.models.headers import BaseHeaders
+from src.client.browsers import FirefoxBrowser, ChromeBrowser, SafariBrowser, EdgeBrowser, BraveBrowser
+from src.models.browser import Browser
 from typing import Any, NamedTuple
 import requests
 

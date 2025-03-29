@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from enums import QueryMethod
+from src.enums import QueryMethod
 from typing import Any, TypedDict
 
 BaseHeaders = TypedDict(
