@@ -42,8 +42,16 @@ Follow these steps to get started:
    poetry run meetup --help
    ```
 
-## Basic Usage
+## Usage
+```sh
+poetry run meetup --log-level=<log-level> <command> <flags>
+```
+### Commands
+`groups`, `events`, `config`, `rsvp`
+### Log Levels
+`debug`, `info`, `warn`, `error`
 
+## Basic Usage
 1. Login to meetup.com in any of these browsers
 
    - Firefox
@@ -62,7 +70,7 @@ Follow these steps to get started:
 
 3. Auto Rsvp to all events of selected groups in config
    ```sh
-   poetry run meetup rsvp --all
+   poetry run meetup --log-level=info rsvp --all
    ```
 
 ## TODO
