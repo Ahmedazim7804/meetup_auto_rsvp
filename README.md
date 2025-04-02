@@ -3,7 +3,6 @@
 A command line tool to automatically RSVP to events from specified groups on Meetup.com.
 
 ## Overview
-
 Meetup AutoRSVP is a Python-based command line tool designed to streamline your event management on Meetup.com. It helps you manage your groups, view events, and automatically RSVP to events based on your selected conditions.
 
 ## Features
@@ -43,6 +42,7 @@ Follow these steps to get started:
    ```
 
 ## Usage
+[![asciicast](https://asciinema.org/a/GX2nO3yx01hPhQguWoN6LX7R2.svg)](https://asciinema.org/a/GX2nO3yx01hPhQguWoN6LX7R2)
 ```sh
 poetry run meetup --log-level=<log-level> <command> <flags>
 ```
